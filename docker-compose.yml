@@ -1,0 +1,39 @@
+version: '3.9'
+services:
+  booking-mysql-service:
+    restart: always
+    image: woahbase/alpine-mysql:latest
+    container_name: booking_mysql_db_container
+    environment:
+      MYSQL_USER: root
+      MYSQL_USER_PWD: root
+      MYSQL_USER_DB: booking_db
+    ports:
+      - 0.0.0.0:3306:3306
+    networks:
+      - booking-network
+    volumes:
+      - db-data:/var/lib/mysql
+
+  booking-service:
+    depends_on:
+      - booking-mysql-service
+    build:
+      context: .
+    image: ashtha-interview-slot-booking:latest
+    container_name: ashtha-interview-slot-booking-app
+    ports:
+      - 0.0.0.0:8080:8080
+    environment:
+      ACTIVE_PROFILE: dev
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      DB_URL: jdbc:mysql://booking-mysql-service:3306/booking_db
+    networks:
+      - booking-network
+    restart: on-failure
+volumes:
+   db-data:
+networks:
+  booking-network:
+    driver: bridge
